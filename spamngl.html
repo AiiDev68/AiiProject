@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NGL Spam Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .ascii-art {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 10px;
+            text-align: center;
+            overflow-x: auto;
+        }
+
+        .social-links {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+
+        .social-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 5px;
+        }
+
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+            transition: border 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .status.active {
+            display: block;
+        }
+
+        .log {
+            padding: 5px 0;
+            font-size: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .log.success {
+            color: #28a745;
+        }
+
+        .log.error {
+            color: #dc3545;
+        }
+
+        .log.info {
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="ascii-art">
+███╗░░██╗░██████╗░██╗░░░░░<br>
+████╗░██║██╔════╝░██║░░░░░<br>
+██╔██╗██║██║░░██╗░██║░░░░░<br>
+██║╚████║██║░░╚██╗██║░░░░░<br>
+██║░╚███║╚██████╔╝███████╗<br>
+╚═╝░░╚══╝░╚═════╝░╚══════╝
+        </div>
+
+        <div class="social-links">
+            <span>📺 <a href="https://www.youtube.com/@wne9838" target="_blank">YouTube</a></span> | 
+            <span>📘 <a href="https://www.facebook.com/accngunghoatdongreal0" target="_blank">Facebook</a></span>
+        </div>
+
+        <h2>NGL Spam Tool</h2>
+
+        <div class="warning">
+            ⚠️ <strong>PERHATIAN:</strong> Tool ini kemungkinan tidak akan berfungsi karena CORS policy. Gunakan versi Python untuk hasil terbaik. Penggunaan tool ini untuk spam adalah ilegal dan melanggar TOS.
+        </div>
+
+        <div class="form-group">
+            <label for="target">Username Target:</label>
+            <input type="text" id="target" placeholder="contoh: username123" required>
+        </div>
+
+        <div class="form-group">
+            <label for="message">Pesan:</label>
+            <textarea id="message" placeholder="Masukkan pesan yang ingin dikirim..." required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="threads">Jumlah Thread:</label>
+            <input type="number" id="threads" value="5" min="1" max="20" required>
+        </div>
+
+        <button class="btn" id="startBtn" onclick="startSpam()">Mulai Spam</button>
+        <button class="btn" id="stopBtn" onclick="stopSpam()" style="display: none; background: #dc3545;">Stop</button>
+
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        const USER_AGENTS = [
+            "Mozilla/5.0 (Linux; Android 9; Infinix X604) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Mobile Safari/537.36",
+            "Mozilla/5.0 (Linux; Android 7.0; PIC-LX9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.101 Mobile Safari/537.36",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (Linux; Android 12; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.131 Mobile Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
+        ];
+
+        let isRunning = false;
+        let intervals = [];
+        let successCount = 0;
+        let errorCount = 0;
+
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function addLog(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.classList.add('active');
+            
+            const log = document.createElement('div');
+            log.className = `log ${type}`;
+            log.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            
+            statusDiv.insertBefore(log, statusDiv.firstChild);
+            
+            if (statusDiv.children.length > 50) {
+                statusDiv.removeChild(statusDiv.lastChild);
+            }
+        }
+
+        async function sendMessage(target, message) {
+            const formData = new URLSearchParams();
+            formData.append('username', target);
+            formData.append('question', message);
+            formData.append('deviceId', generateUUID());
+            formData.append('gameSlug', '');
+            formData.append('referrer', '');
+
+            try {
+                const response = await fetch('https://ngl.link/api/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                        'Accept': '*/*',
+                        'Origin': 'https://ngl.link',
+                        'Referer': `https://ngl.link/${target}`,
+                    },
+                    body: formData.toString()
+                });
+
+                if (response.ok) {
+                    successCount++;
+                    addLog(`✅ Berhasil dikirim! Total: ${successCount}`, 'success');
+                } else if (response.status === 429) {
+                    addLog('⏸️ Rate limit! Menunggu 20 detik...', 'error');
+                    await new Promise(resolve => setTimeout(resolve, 20000));
+                } else {
+                    errorCount++;
+                    addLog(`❌ Gagal (${response.status}). Error: ${errorCount}`, 'error');
+                }
+            } catch (error) {
+                errorCount++;
+                addLog(`❌ CORS Error atau Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function spamLoop(target, message) {
+            while (isRunning) {
+                await sendMessage(target, message);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+
+        function startSpam() {
+            const target = document.getElementById('target').value.trim();
+            const message = document.getElementById('message').value.trim();
+            const threads = parseInt(document.getElementById('threads').value);
+
+            if (!target || !message) {
+                alert('Target dan pesan harus diisi!');
+                return;
+            }
+
+            isRunning = true;
+            successCount = 0;
+            errorCount = 0;
+
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'block';
+            document.getElementById('target').disabled = true;
+            document.getElementById('message').disabled = true;
+            document.getElementById('threads').disabled = true;
+
+            addLog(`🚀 Memulai spam dengan ${threads} thread...`, 'info');
+
+            for (let i = 0; i < threads; i++) {
+                spamLoop(target, message);
+            }
+        }
+
+        function stopSpam() {
+            isRunning = false;
+            
+            document.getElementById('startBtn').style.display = 'block';
+            document.getElementById('stopBtn').style.display = 'none';
+            document.getElementById('target').disabled = false;
+            document.getElementById('message').disabled = false;
+            document.getElementById('threads').disabled = false;
+
+            addLog(`🛑 Spam dihentikan. Sukses: ${successCount}, Error: ${errorCount}`, 'info');
+        }
+    </script>
+</body>
+</html>
